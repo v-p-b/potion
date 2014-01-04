@@ -110,8 +110,10 @@ def parseFeed(feed):
     for item in reversed(f['entries']):
         if 'links' in item:
             original_url = unicode(item['links'][0]['href'])
-        else:
+        elif 'link' in item:
             original_url = unicode(item['link'])
+        else:
+            original_url=u"missing_link"
 
         # checking duplications
         if db_session.query(Item). \
