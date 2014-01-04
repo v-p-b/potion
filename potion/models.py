@@ -27,7 +27,7 @@ from sqlalchemy.orm import relationship, scoped_session, sessionmaker, backref
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from pickle import dumps, loads
-from potion.common import cfg
+from common import cfg
 
 engine = create_engine(cfg.get('database', 'connection'))
 db_session = scoped_session(sessionmaker(autocommit=False,
