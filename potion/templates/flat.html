@@ -4,7 +4,7 @@
 
 {{ render_pagination(pagination, menu_path) }}
 {% for item in items %}
-<div class="item">
+<div class="item" onClick="for(i=0;i<this.childNodes.length;i++){n=this.childNodes[i];if(n.className=='item_body'){n.style.display=n.style.display=='none'?'block':'none';}}">
  <div class="item_head">
   <ul>
    <li> {{ item.added.__str__()[:-7] }}</li>
