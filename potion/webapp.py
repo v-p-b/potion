@@ -26,7 +26,9 @@ from flask import Flask, request, render_template, redirect, flash
 from sqlalchemy import not_
 from potion.models import db_session, Item, Source, Query
 from potion.common import cfg
-from flask.ext.wtf import Form, TextField, Required, SubmitField
+from flask.ext.wtf import Form
+from wtforms import  TextField, SubmitField
+from wtforms.validators import Required
 from potion.helpers import Pagination
 
 
@@ -35,6 +37,7 @@ menu_items  = (('/'                 , 'home')
               ,('/sources'          , 'sources')
               ,('/queries'          , 'queries')
               ,('/top'              , 'top %s unarchived' % cfg.get('app', 'items_per_page'))
+              ,('/saved'            , 'top %s saved' % cfg.get('app', 'items_per_page'))
               ,('/all'              , 'all')
               )
 
@@ -74,9 +77,27 @@ def index():
 def get_unarchived_ids(items):
     return [item.item_id for item in items if item.archived == False]
 
+def get_saved_ids(items):
+    return [item.item_id for item in items if item.saved == True]
+
 @app.route('/doc', methods=['GET'])
 def doc():
     return 'TODO'
+
+@app.route('/saved', methods=['GET'])
+@app.route('/saved/<int:page_num>', methods=['GET'])
+def saved(page_num=1):
+    limit = int(cfg.get('app', 'items_per_page'))
+    offset = limit*(page_num-1)
+    items = Item.query.filter(Item.saved==True).order_by(Item.added).limit(limit).offset(offset).all()
+    pagination = Pagination(page_num, limit, Item.query.filter(Item.saved==True).count())
+    return render_template('flat.html'
+                          ,items        = items
+                          ,pagination   = pagination
+                          ,unsaveds     = get_saved_ids(items)
+                          ,unarchiveds  = get_unarchived_ids(items)
+                          ,menu_path    = '/saved' #preserve menu highlight when paging
+                          )
 
 @app.route('/top', methods=['GET'])
 @app.route('/top/<int:page_num>', methods=['GET'])
@@ -88,6 +109,7 @@ def top(page_num=1):
     return render_template('flat.html'
                           ,items        = items
                           ,pagination   = pagination
+                          ,unsaveds     = get_saved_ids(items)
                           ,unarchiveds  = get_unarchived_ids(items)
                           ,menu_path    = '/top' #preserve menu highlight when paging
                           )
@@ -235,6 +257,17 @@ def opml():
     return render_template('opml.xml'
                            ,sources = Source.query.filter(Source.source_type=='feed').all()
                            )
+
+@app.route('/save', methods=['POST'])
+@app.route('/save/<int:save_id>', methods=['GET'])
+def save(save_id=0):
+    db_session.query(Item).filter(Item.item_id==save_id).update({Item.saved: True}, synchronize_session='fetch')
+    db_session.commit()
+    if save_id:
+        return render_template('status.html', messages=['item(%s) saved' % save_id])
+    flash('Successfully saved item')
+    return redirect(request.referrer or '/')
+
 
 @app.route('/opml/import', methods=['GET'])
 def opml_import():

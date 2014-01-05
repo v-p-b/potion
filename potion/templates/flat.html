@@ -9,6 +9,7 @@
   <ul>
    <li> {{ item.added.__str__()[:-7] }}</li>
    <li>{% if item.archived %}[archived]{% else %}<a href="/archive/{{ item.item_id }}" class="archive_link" target="status_frame">archive</a>{% endif %}</li>
+   <li>{% if item.saved %}[saved]{% else %}<a href="/save/{{ item.item_id }}" class="archive_link" target="status_frame">save</a>{% endif %}</li>
    {% for k,attr in item.attributes.iteritems() %}
    <li>{{ k }}: {{ attr }}</li>
    {% endfor %}

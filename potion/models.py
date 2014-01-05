@@ -115,6 +115,7 @@ class Item(Base):
     url           = Column(Text)
     original_url  = Column(Text)
     archived      = Column(Boolean)
+    saved         = Column(Boolean)
     attributes    = Column(PickleType(comparator=dict.__eq__))
 
     def __init__(self, name, content, original_url, url='', attributes={}):
