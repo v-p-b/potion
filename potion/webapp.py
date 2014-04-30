@@ -89,8 +89,7 @@ def doc():
 def saved(page_num=1):
     limit = int(cfg.get('app', 'items_per_page'))
     offset = limit*(page_num-1)
-    items = Item.query.filter(Item.saved==True).order_by(Item.added).limit(limit).offset(offset).all()
-    items.reverse()
+    items = Item.query.filter(Item.saved==True).order_by(Item.added.desc()).limit(limit).offset(offset).all()
     pagination = Pagination(page_num, limit, Item.query.filter(Item.saved==True).count())
     return render_template('flat.html'
                           ,items        = items
